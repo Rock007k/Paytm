@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const zod = require('zod');
-const { User } = require('../db');
+const { User, Account } = require('../db');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../config');
+const { authMiddleware } = require('../middleware');
 
 
 const signupBody = zod.object({
@@ -16,6 +17,12 @@ const signupBody = zod.object({
 const signinBody = zod.object({
     username: zod.string().email(),
 	password: zod.string()
+});
+
+const updateBody = zod.object({
+	password: zod.string().optional(),
+    firstName: zod.string().optional(),
+    lastName: zod.string().optional(),
 });
 
 router.get('/signin',async function (req, res, next) {
@@ -85,6 +92,11 @@ router.post('/signup', async function (req, res, next) {
 
     const userId = user._id;
 
+    await Account.create({
+        userId,
+        balance: 1 + Math.random()*10000
+    })
+
     if (user) {
         const token = jwt.sign({userId}, JWT_SECRET);
   
@@ -103,9 +115,60 @@ router.post('/signup', async function (req, res, next) {
 
 
 
-// router.put('/changePassword', function (req, res, next) {
-//     console.log("Router Working");
-//     res.end();
-// });
+router.put('/changePassword',authMiddleware, async function (req, res, next) {
+    console.log("Change passowrd start")
+    const body = req.body;
+
+    const response = updateBody.safeParse(body);
+    if(!response){
+        return res.status(411).json({
+                msg:"Incorrect inputs"
+            }
+        )
+    };
+
+    await User.updateOne({_id: req.userId}, req.body);
+
+    res.json({
+        message:"Updated Successfully"
+    })
+
+});
+
+router.get('/bulb', async function(req, res){
+
+    try{
+    const body = req.body;
+    const filter = req.query.filter || "";
+
+    const users = await User.find({
+        $or:[{
+            firstName:{
+                "$regex":filter
+            }
+        },{
+            lastName:{
+                "$regex":filter
+            }
+        }]
+
+    });
+    res.json({
+        user: users.map((user) => ({
+            username:user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            _id: user._id
+        })
+    )
+    });
+
+
+    console.log("End paramter");
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
 
 module.exports = router;

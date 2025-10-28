@@ -1,9 +1,9 @@
+import React from 'react'
 
-function App() {
-
+const App = () => {
   return (
     <div>
-        Hello world
+      <h1>Let's start building PayX</h1>
     </div>
   )
 }
