@@ -1,11 +1,18 @@
-import React from 'react'
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import Signup from './pages/Signup';
 
-const App = () => {
+function App(){
   return (
-    <div>
-      <h1>Let's start building PayX</h1>
-    </div>
+      <>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/signup" element={<Signup />}></Route>
+            {/* <Route path="/signin" el SendMoney />}></Route> */}
+          </Routes>
+        </BrowserRouter>
+      </>
   )
 }
 
 export default App
+
