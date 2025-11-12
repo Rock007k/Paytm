@@ -26,7 +26,7 @@ const updateBody = zod.object({
 });
 
 router.get('/signin',async function (req, res, next) {
-
+    console.log("Start sign up");
     const body = req.body;
 
     const response = signinBody.safeParse(body);
