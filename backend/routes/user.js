@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const zod = require('zod');
+const zod = require('zod');     // validation
+
 const { User, Account } = require('../db');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../config');
@@ -27,7 +28,8 @@ const updateBody = zod.object({
 
 router.get('/signin',async function (req, res, next) {
     console.log("Start sign up");
-    const body = req.body;
+    const navigate = useNavigate();
+     const body = req.body;
 
     const response = signinBody.safeParse(body);
 
@@ -135,11 +137,12 @@ router.put('/changePassword',authMiddleware, async function (req, res, next) {
 
 });
 
-router.get('/bulb', async function(req, res){
+router.get('/bulk', authMiddleware, async function(req, res){
+    console.log("Start bulk users ");
 
     try{
     const body = req.body;
-    const filter = req.query.filter || "";
+    const filter = req.body.filter || "";
 
     const users = await User.find({
         $or:[{
@@ -163,8 +166,6 @@ router.get('/bulb', async function(req, res){
     )
     });
 
-
-    console.log("End paramter");
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Internal Server Error" });
